@@ -18,7 +18,8 @@ namespace AlloMasterSale.Data
         public int CompanyId { get; set; }
         public Company Company { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Используем UTC вместо Local
+
 
         // Связь с Details (один пользователь -> много деталей)
         public List<Detail> Details { get; set; }

@@ -10,7 +10,8 @@ namespace AlloMasterSale.Data
         [Required]
         public string Name { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
 
         // Связь с User (одна компания -> много пользователей)
         public List<User> Users { get; set; }
