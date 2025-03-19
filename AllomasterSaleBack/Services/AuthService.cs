@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using AlloMasterSale.Data;
 using AlloMasterSale.Models;
 using AlloMasterSale.Helpers;
-using Microsoft.Extensions.Configuration;
 
 namespace AlloMasterSale.Services
 {
@@ -29,31 +28,34 @@ namespace AlloMasterSale.Services
             int companyId;
             Company company;
 
-            if (dto.CompanyId.HasValue)
+            if (dto.CompanyId.HasValue && dto.CompanyId.Value > 0) // Проверяем, что CompanyId больше 0
             {
                 company = await _context.Companies.FindAsync(dto.CompanyId.Value);
                 if (company == null)
                 {
-                    company = new Company 
-                    { 
-                        Name = $"Company_{dto.CompanyId}",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    _context.Companies.Add(company);
-                    await _context.SaveChangesAsync();
+                    return "Компания с указанным ID не найдена";
                 }
                 companyId = company.Id;
             }
             else if (!string.IsNullOrWhiteSpace(dto.CompanyName))
             {
-                company = new Company 
-                { 
-                    Name = dto.CompanyName,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.Companies.Add(company);
-                await _context.SaveChangesAsync();
-                companyId = company.Id;
+                // Проверяем, существует ли компания с таким названием
+                company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == dto.CompanyName);
+                if (company != null)
+                {
+                    companyId = company.Id; // Используем существующую компанию
+                }
+                else
+                {
+                    company = new Company
+                    {
+                        Name = dto.CompanyName,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Companies.Add(company);
+                    await _context.SaveChangesAsync();
+                    companyId = company.Id;
+                }
             }
             else
             {
@@ -64,6 +66,7 @@ namespace AlloMasterSale.Services
             {
                 Login = dto.Login,
                 Password = PasswordHelper.HashPassword(dto.Password),
+                Role = "User",
                 CompanyId = companyId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -82,9 +85,66 @@ namespace AlloMasterSale.Services
                 return "Неверный логин или пароль";
             }
 
-            var token = _jwtHelper.GenerateToken(user.Id.ToString(), user.Login);
+            var token = _jwtHelper.GenerateToken(user.Id.ToString(), user.Login, user.Role);
+            return token;
+        }
 
-            return token; // ✅ Теперь метод возвращает `string`, а не `object`
+        public async Task<string> RegisterManagerAsync(RegisterDto dto)
+        {
+            if (await _context.Users.AnyAsync(u => u.Login == dto.Login))
+            {
+                return "Пользователь с таким логином уже существует";
+            }
+
+            int companyId;
+            Company company;
+
+            if (dto.CompanyId.HasValue && dto.CompanyId.Value > 0)
+            {
+                company = await _context.Companies.FindAsync(dto.CompanyId.Value);
+                if (company == null)
+                {
+                    return "Компания с указанным ID не найдена";
+                }
+                companyId = company.Id;
+            }
+            else if (!string.IsNullOrWhiteSpace(dto.CompanyName))
+            {
+                company = await _context.Companies.FirstOrDefaultAsync(c => c.Name == dto.CompanyName);
+                if (company != null)
+                {
+                    companyId = company.Id;
+                }
+                else
+                {
+                    company = new Company
+                    {
+                        Name = dto.CompanyName,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Companies.Add(company);
+                    await _context.SaveChangesAsync();
+                    companyId = company.Id;
+                }
+            }
+            else
+            {
+                return "Необходимо указать ID компании или создать новую";
+            }
+
+            var user = new User
+            {
+                Login = dto.Login,
+                Password = PasswordHelper.HashPassword(dto.Password),
+                Role = "Manager",
+                CompanyId = companyId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return $"Регистрация менеджера успешна, компания ID: {companyId}";
         }
     }
 }

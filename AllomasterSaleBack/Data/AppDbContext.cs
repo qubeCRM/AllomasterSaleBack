@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace AlloMasterSale.Data
 {
@@ -8,12 +6,12 @@ namespace AlloMasterSale.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Product> Products { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<Detail> Details { get; set; }
+        public DbSet<Request> Requests { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +23,11 @@ namespace AlloMasterSale.Data
             // Уникальность названия компании
             modelBuilder.Entity<Company>()
                 .HasIndex(c => c.Name)
+                .IsUnique();
+
+            // Уникальность названия продукта
+            modelBuilder.Entity<Product>()
+                .HasIndex(p => p.Name)
                 .IsUnique();
 
             // Связь User -> Company
@@ -45,11 +48,29 @@ namespace AlloMasterSale.Data
                 .WithMany(s => s.Payments)
                 .HasForeignKey(p => p.SubscriptionId);
 
-            // Связь Detail -> User
-            modelBuilder.Entity<Detail>()
-                .HasOne(d => d.User)
-                .WithMany(u => u.Details)
-                .HasForeignKey(d => d.UserId);
+            // Связь Request -> User
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Requests)
+                .HasForeignKey(r => r.UserId);
+
+            // Связь Request -> Company
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Company)
+                .WithMany(c => c.Requests)
+                .HasForeignKey(r => r.CompanyId);
+
+            // Связь Request -> Subscription
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Subscription)
+                .WithMany(s => s.Requests)
+                .HasForeignKey(r => r.SubscriptionId);
+
+            // Связь Request -> Payment
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.Payment)
+                .WithMany(p => p.Requests)
+                .HasForeignKey(r => r.PaymentId);
         }
     }
 }

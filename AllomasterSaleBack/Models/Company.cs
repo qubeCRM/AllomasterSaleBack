@@ -12,11 +12,9 @@ namespace AlloMasterSale.Data
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-
-        // Связь с User (одна компания -> много пользователей)
+        // Связь с пользователями и подписками
         public List<User> Users { get; set; }
-
-        // Связь с Subscriptions (одна компания -> много подписок)
         public List<Subscription> Subscriptions { get; set; }
+        public List<Request> Requests { get; set; }
     }
 }

@@ -14,14 +14,16 @@ namespace AlloMasterSale.Data
         [Required]
         public string Password { get; set; }
 
+        [Required]
+        public string Role { get; set; } = "User"; // Добавляем поле Role, по умолчанию "User"
+
         [ForeignKey("Company")]
         public int CompanyId { get; set; }
         public Company Company { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Используем UTC вместо Local
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-
-        // Связь с Details (один пользователь -> много деталей)
-        public List<Detail> Details { get; set; }
+        // Связь с заявками
+        public List<Request> Requests { get; set; }
     }
 }

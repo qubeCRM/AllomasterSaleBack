@@ -16,7 +16,7 @@ namespace AlloMasterSale.Helpers
             _configuration = configuration;
         }
 
-        public string GenerateToken(string userId, string login)
+        public string GenerateToken(string userId, string login, string role)
         {
             var secretKey = _configuration["JwtSettings:SecretKey"];
             var issuer = _configuration["JwtSettings:Issuer"];
@@ -30,7 +30,8 @@ namespace AlloMasterSale.Helpers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, login),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, role) // Добавляем роль в токен
             };
 
             var token = new JwtSecurityToken(

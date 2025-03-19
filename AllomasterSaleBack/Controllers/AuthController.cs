@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AlloMasterSale.Models;
 using AlloMasterSale.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AlloMasterSale.Controllers
 {
@@ -36,6 +37,17 @@ namespace AlloMasterSale.Controllers
             }
 
             return Ok(new { token });
+        }
+
+        [HttpPost("register-manager")]
+        [Authorize(Roles = "Admin")] // Доступ только для администратора
+        public async Task<IActionResult> RegisterManager([FromBody] RegisterDto dto)
+        {
+            var result = await _authService.RegisterManagerAsync(dto);
+            if (result.Contains("существует"))
+                return BadRequest(new { message = result });
+
+            return Ok(new { message = result });
         }
 
     }

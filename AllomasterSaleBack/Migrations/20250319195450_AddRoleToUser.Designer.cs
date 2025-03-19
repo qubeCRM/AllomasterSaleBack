@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AllomasterSaleBack.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250319120749_FixDateTimeUtc")]
-    partial class FixDateTimeUtc
+    [Migration("20250319195450_AddRoleToUser")]
+    partial class AddRoleToUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,36 +46,6 @@ namespace AllomasterSaleBack.Migrations
                         .IsUnique();
 
                     b.ToTable("Companies");
-                });
-
-            modelBuilder.Entity("AlloMasterSale.Data.Detail", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Login")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Pswrd")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Details");
                 });
 
             modelBuilder.Entity("AlloMasterSale.Data.Payment", b =>
@@ -112,6 +82,79 @@ namespace AllomasterSaleBack.Migrations
                     b.HasIndex("SubscriptionId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("AlloMasterSale.Data.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Months")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("AlloMasterSale.Data.Request", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubscriptionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("SubscriptionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Requests");
                 });
 
             modelBuilder.Entity("AlloMasterSale.Data.Subscription", b =>
@@ -169,6 +212,10 @@ namespace AllomasterSaleBack.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
@@ -177,17 +224,6 @@ namespace AllomasterSaleBack.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("AlloMasterSale.Data.Detail", b =>
-                {
-                    b.HasOne("AlloMasterSale.Data.User", "User")
-                        .WithMany("Details")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AlloMasterSale.Data.Payment", b =>
@@ -199,6 +235,41 @@ namespace AllomasterSaleBack.Migrations
                         .IsRequired();
 
                     b.Navigation("Subscription");
+                });
+
+            modelBuilder.Entity("AlloMasterSale.Data.Request", b =>
+                {
+                    b.HasOne("AlloMasterSale.Data.Company", "Company")
+                        .WithMany("Requests")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AlloMasterSale.Data.Payment", "Payment")
+                        .WithMany("Requests")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AlloMasterSale.Data.Subscription", "Subscription")
+                        .WithMany("Requests")
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AlloMasterSale.Data.User", "User")
+                        .WithMany("Requests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Payment");
+
+                    b.Navigation("Subscription");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AlloMasterSale.Data.Subscription", b =>
@@ -225,19 +296,28 @@ namespace AllomasterSaleBack.Migrations
 
             modelBuilder.Entity("AlloMasterSale.Data.Company", b =>
                 {
+                    b.Navigation("Requests");
+
                     b.Navigation("Subscriptions");
 
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("AlloMasterSale.Data.Payment", b =>
+                {
+                    b.Navigation("Requests");
+                });
+
             modelBuilder.Entity("AlloMasterSale.Data.Subscription", b =>
                 {
                     b.Navigation("Payments");
+
+                    b.Navigation("Requests");
                 });
 
             modelBuilder.Entity("AlloMasterSale.Data.User", b =>
                 {
-                    b.Navigation("Details");
+                    b.Navigation("Requests");
                 });
 #pragma warning restore 612, 618
         }

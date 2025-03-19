@@ -24,9 +24,10 @@ namespace AlloMasterSale.Data
         [Required]
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Связь с Payments (одна подписка -> много платежей)
+        // Связь с платежами и заявками
         public List<Payment> Payments { get; set; }
+        public List<Request> Requests { get; set; }
     }
 }
