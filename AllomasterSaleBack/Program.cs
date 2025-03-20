@@ -20,6 +20,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Подключение к PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -28,6 +29,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IRequestService, RequestService>();
+builder.Services.AddScoped<ILessonService, LessonService>(); // Добавил сервис уроков
+
 builder.Services.AddSingleton<JwtHelper>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -48,7 +51,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Настройка сериализации JSON без ReferenceHandler.Preserve
+// Настройка сериализации JSON
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -89,10 +92,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-
-    });
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowAll");

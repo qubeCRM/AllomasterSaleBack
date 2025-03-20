@@ -1,6 +1,9 @@
-namespace AlloMasterSale.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AlloMasterSale.Data;
 
-public class ILessonService
+public interface ILessonService
 {
-    
+    Task<IEnumerable<Lesson>> GetAllLessonsAsync();
+    Task<Lesson> CreateLessonAsync(Lesson lesson);
 }

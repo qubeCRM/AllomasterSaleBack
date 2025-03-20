@@ -10,6 +10,7 @@ namespace AlloMasterSale.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<Lesson> Lessons { get; set; } // Добавил таблицу уроков
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -71,6 +72,11 @@ namespace AlloMasterSale.Data
                 .HasOne(r => r.Payment)
                 .WithMany(p => p.Requests)
                 .HasForeignKey(r => r.PaymentId);
+
+            // Определение модели Lesson
+            modelBuilder.Entity<Lesson>().HasKey(l => l.Id);
+            modelBuilder.Entity<Lesson>().Property(l => l.YoutubeLink).IsRequired();
+            modelBuilder.Entity<Lesson>().Property(l => l.Description).HasMaxLength(500);
         }
     }
 }
